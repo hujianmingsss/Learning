@@ -43,4 +43,4 @@ Learning/
 - 掌握 PyTorch 训练与调试
 - 提升论文阅读、复现与实验设计能力
 - 强化数据结构与算法能力
-- 学习 Transformer、大模型工具调用与 Agent
+- 学习 Transformer、大模型工具调用与 Agent# Learning
