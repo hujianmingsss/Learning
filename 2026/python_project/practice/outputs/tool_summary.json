@@ -1,0 +1,12 @@
+{
+    "file_count": 3,
+    "step_count": 6,
+    "tool_counts": {
+        "WeatherTool": 3,
+        "SoilMoistureTool": 1,
+        "IrrigationRuleTool": 2
+    },
+    "invalid_files": [
+        "invalid_plan.json"
+    ]
+}

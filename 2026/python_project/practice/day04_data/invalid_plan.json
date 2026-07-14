@@ -1,0 +1,6 @@
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool_name": "WeatherTool"
+        }
