@@ -12,7 +12,7 @@ import json
 # sorted(...)
 
 
-def find_json_files(folder_path):
+def find_json_files(folder_path: str | Path) -> list[Path]:
     json_files = []
 
     folder = Path(folder_path)
@@ -22,7 +22,7 @@ def find_json_files(folder_path):
 
     jsonfiles = sorted(
         json_files,
-        key=lambda file_path: file_path.name
+        key=lambda file_path: file_path.name,
     )
 
     # sorted() 不会原地修改原列表，
@@ -40,7 +40,7 @@ def find_json_files(folder_path):
 # 函数内部不要打印。
 
 
-def read_plan(file_path):
+def read_plan(file_path: str | Path) -> dict[str, object]:
     file_path = Path(file_path)
 
     with file_path.open("r", encoding="utf-8") as file:
@@ -55,7 +55,9 @@ def read_plan(file_path):
 # 返回工具名称列表。
 
 
-def extract_tool_names(plan):
+def extract_tool_names(
+    plan: dict[str, object],
+) -> list[str]:
     tool_list = []
 
     for step in plan["steps"]:
@@ -72,7 +74,9 @@ def extract_tool_names(plan):
 # 函数内部不打印。
 
 
-def count_tool_usage(tool_names):
+def count_tool_usage(
+    tool_names: list[str],
+) -> dict[str, int]:
     tool_count = {}
 
     for tool_name in tool_names:
@@ -90,7 +94,9 @@ def count_tool_usage(tool_names):
 # 返回两个列表。
 
 
-def collect_plans(json_files):
+def collect_plans(
+    json_files: list[Path],
+) -> tuple[list[dict[str, object]], list[str]]:
     valid_plans = []
     invalid_plans = []
 
@@ -111,7 +117,9 @@ def collect_plans(json_files):
 # 返回汇总字典。
 
 
-def summarize_tool_usage(json_files):
+def summarize_tool_usage(
+    json_files: list[Path],
+) -> dict[str, object]:
     valid_plans, invalid_plans = collect_plans(json_files)
 
     all_tool_names = []
@@ -137,7 +145,10 @@ def summarize_tool_usage(json_files):
 # 使用 json.dump() 将结果写入 JSON 文件。
 
 
-def save_summary(summary, output_path):
+def save_summary(
+    summary: dict[str, object],
+    output_path: str | Path,
+) -> None:
     output_path = Path(output_path)
 
     output_path.parent.mkdir(
