@@ -43,8 +43,34 @@ def find_json_files(folder_path: str | Path) -> list[Path]:
 def read_plan(file_path: str | Path) -> dict[str, object]:
     file_path = Path(file_path)
 
-    with file_path.open("r", encoding="utf-8") as file:
-        plan = json.load(file)
+    try:
+        with file_path.open("r", encoding="utf-8") as file:
+            plan = json.load(file)
+
+    except FileNotFoundError as error:
+        raise FileNotFoundError(
+            f"文件不存在：{file_path}"
+        ) from error
+
+    except json.JSONDecodeError as error:
+        raise ValueError(
+            f"JSON格式错误: {file_path}"
+        ) from error
+
+    if not isinstance(plan, dict):
+        raise ValueError(
+            f"顶层结构必须是字典：{file_path}"
+        )
+
+    if "steps" not in plan:
+        raise ValueError(
+            f"缺少steps字段：{file_path}"
+        )
+
+    if not isinstance(plan["steps"], list):
+        raise ValueError(
+            f"steps必须是列表：{file_path}"
+        )
 
     return plan
 
@@ -105,7 +131,8 @@ def collect_plans(
             plan = read_plan(file_path)
             valid_plans.append(plan)
 
-        except json.JSONDecodeError:
+        except ValueError as error:
+            print(f"读取失败:{error}")
             invalid_plans.append(file_path.name)
 
     return valid_plans, invalid_plans
