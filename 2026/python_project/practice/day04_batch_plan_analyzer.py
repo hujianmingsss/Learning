@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+
 # 参数可以是字符串路径，也可以是 Path 对象；
 # 只查找当前目录中的 .json 文件；
 # 返回由 Path 对象组成的列表；
@@ -36,7 +37,6 @@ def find_json_files(folder_path: str | Path) -> list[Path]:
 # 使用 UTF-8 编码；
 # 使用 json.load() 读取；
 # 返回解析后的 Python 对象；
-# 暂时不捕获非法 JSON 异常；
 # 函数内部不要打印。
 
 
@@ -54,7 +54,7 @@ def read_plan(file_path: str | Path) -> dict[str, object]:
 
     except json.JSONDecodeError as error:
         raise ValueError(
-            f"JSON格式错误: {file_path}"
+            f"JSON格式错误：{file_path}"
         ) from error
 
     if not isinstance(plan, dict):
@@ -73,6 +73,70 @@ def read_plan(file_path: str | Path) -> dict[str, object]:
         )
 
     return plan
+
+
+# 接收一个计划对象；
+# 检查计划顶层、steps、步骤结构、tool_name 和 args；
+# 返回错误信息列表；
+# 返回空列表表示校验通过。
+
+
+def validate_plan(plan: object) -> list[str]:
+    errors = []
+
+    # 1. 检查计划顶层是否为字典
+    if not isinstance(plan, dict):
+        errors.append("计划顶层必须是字典")
+        return errors
+
+    # 2. 检查是否存在 steps 字段
+    if "steps" not in plan:
+        errors.append("缺少 steps 字段")
+        return errors
+
+    steps = plan["steps"]
+
+    # 3. 检查 steps 是否为列表
+    if not isinstance(steps, list):
+        errors.append("steps 必须是列表")
+        return errors
+
+    # 4. 逐个检查步骤
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            errors.append(
+                f"第 {index} 个步骤必须是字典"
+            )
+            continue
+
+        # 5. 检查 tool_name
+        if "tool_name" not in step:
+            errors.append(
+                f"第 {index} 个步骤缺少 tool_name"
+            )
+        else:
+            tool_name = step["tool_name"]
+
+            if (
+                not isinstance(tool_name, str)
+                or tool_name.strip() == ""
+            ):
+                errors.append(
+                    f"第 {index} 个步骤的 "
+                    "tool_name 必须是非空字符串"
+                )
+
+        # 6. 检查 args
+        if "args" not in step:
+            errors.append(
+                f"第 {index} 个步骤缺少 args"
+            )
+        elif not isinstance(step["args"], dict):
+            errors.append(
+                f"第 {index} 个步骤的 args 必须是字典"
+            )
+
+    return errors
 
 
 # 接收计划字典；
@@ -132,7 +196,7 @@ def collect_plans(
             valid_plans.append(plan)
 
         except ValueError as error:
-            print(f"读取失败:{error}")
+            print(f"读取失败：{error}")
             invalid_plans.append(file_path.name)
 
     return valid_plans, invalid_plans
@@ -235,3 +299,59 @@ if __name__ == "__main__":
 
     print("结果已保存到：")
     print(output_path)
+
+    # Day 7 临时校验样例
+    validation_cases: list[tuple[str, object]] = [
+        (
+            "合法计划",
+            {
+                "steps": [
+                    {
+                        "tool_name": "WeatherTool",
+                        "args": {},
+                    }
+                ]
+            },
+        ),
+        (
+            "顶层不是字典",
+            [],
+        ),
+        (
+            "缺少steps",
+            {
+                "name": "demo",
+            },
+        ),
+        (
+            "steps不是列表",
+            {
+                "steps": {},
+            },
+        ),
+        (
+            "步骤不是字典",
+            {
+                "steps": [
+                    "WeatherTool",
+                ],
+            },
+        ),
+        (
+            "字段类型错误",
+            {
+                "steps": [
+                    {
+                        "tool_name": "",
+                        "args": [],
+                    }
+                ]
+            },
+        ),
+    ]
+
+    print("计划校验结果：")
+
+    for case_name, case in validation_cases:
+        errors = validate_plan(case)
+        print(case_name, "：", errors)
